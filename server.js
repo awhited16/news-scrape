@@ -5,16 +5,26 @@ var mongoose = require('mongoose');
 // Require axios and cheerio. This makes the scraping possible
 var axios = require("axios");
 var cheerio = require("cheerio");
-// var exphbs = require("express-handlebars");
+var exphbs = require("express-handlebars");
+
+// Initialize Express
+var app = express();
+
+// Use the express.static middleware to serve static content for the app from the "public" directory in the application directory.
+app.use(express.static("public"));
+
+// Sets up the Express app to handle data parsing
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+app.set("view engine", "handlebars");
 
 // If deployed, use the deployed database. Otherwise use the local mongoHeadlines database
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/newsdb";
 
 mongoose.connect(MONGODB_URI);
 
-
-// Initialize Express
-var app = express();
 
 // Database configuration
 var databaseUrl = "newsdb";
@@ -27,22 +37,22 @@ db.on("error", function(error) {
 });
 
 // Main route (simple Hello World Message)
-app.get("/", function(req, res) {
-  res.send("Hello world");
-});
+// app.get("/", function(req, res) {
+//   res.send("Hello world");
+// });
 
 // Retrieve data from the db
-app.get("/all", function(req, res) {
+app.get("/", function(req, res) {
   // Find all results from the scrapedNews collection in the db
-  db.scrapedNews.find({}, function(error, found) {
-    // Throw any errors to the console
-    if (error) {
-      console.log(error);
-    }
-    // If there are no errors, send the data to the browser as json
-    else {
-      res.json(found);
-    }
+  db.scrapedNews.find({})
+  .then(function(err, doc) {
+    // If any articles are found, send them to the client
+    // res.json(newsdb);
+    res.render("index", {article: doc});
+  })
+  .catch(function(err) {
+    // If an error occurs, send it back to the client
+    res.json(err);
   });
 });
 
@@ -61,7 +71,7 @@ app.get("/scrape", function(req, res) {
       // var url = $(element).parent("a").attr("href");
 
       // Daily Mail - all but headline
-      var headline = $(element).children("img").attr("alt");
+      var headline = $(element).children("a").children("img").attr("alt");
       var summary = $(element).children("p").text();
       var url = $(element).children("a").attr("href");
       console.log(headline);
@@ -69,10 +79,10 @@ app.get("/scrape", function(req, res) {
       console.log(url);
 
       // If this found element had a headline, summary, and url
-      if (summary && url) {
+      if (headline && summary && url) {
         // Insert the data in the scrapedNews db
         db.scrapedNews.insert({
-          // headline: headline,
+          headline: headline,
           summary: summary,
           url: url
         },
@@ -84,6 +94,7 @@ app.get("/scrape", function(req, res) {
           else {
             // Otherwise, log the inserted data
             console.log(inserted);
+            res.send("Return to homepage to view articles")
           }
         });
       }
@@ -91,7 +102,38 @@ app.get("/scrape", function(req, res) {
   });
 
   // Send a "Scrape Complete" message to the browser
-  res.send("Scrape Complete");
+  // res.redirect("/");
+});
+
+// Show the user the individual quote and the form to update the quote.
+app.get("/:id", function(req, res) {
+  var articleId = req.params.id;
+  db.scrapedNews.find({_id: articleId})
+  .then(function(newsdb) {
+    // If any Books are found, send them to the client
+    res.json(newsdb);
+  })
+  .catch(function(err) {
+    // If an error occurs, send it back to the client
+    res.json(err);
+  });
+});
+
+app.post("/:id", function(req,res) {
+  db.Comment.create(req.body)
+  .then(function(commentdb) {
+    return db.scrapedNews.findOneAndUpdate({
+      _id: req.params.id
+    }, {
+      comment: commentdb._id
+    }, {
+      new: true
+    });
+  }).then(function (newsdb) {
+    res.json(newsdb);
+  }).catch(function (err) {
+    res.json(err);
+  });
 });
 
 

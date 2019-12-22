@@ -1,0 +1,17 @@
+<h1>News Scraper</h1>
+
+<p>View and comment on the latest news.</p>
+
+<ul>
+  {{#each article}}
+  	<li>
+  	    <p><span class="label">Headline:</span> {{this.headline}}</p>
+        <p><span class="label">Summary:</span> {{this.summary}}</p>
+        <p><span class="label">URL:</span> {{this.url}}</p>
+
+        {{!-- <button data-id="{{this.id}}" class="delquote">Delete</button> --}}
+
+        {{!-- {{!-- <a href="/{{this.id}}">Update this quote</a> --}} --}}
+  	</li>
+  {{/each}}
+</ul>
