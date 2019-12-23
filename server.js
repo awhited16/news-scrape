@@ -1,5 +1,6 @@
 // Dependencies
 var express = require("express");
+var logger = require("morgan");
 var mongojs = require("mongojs");
 var mongoose = require('mongoose');
 // Require axios and cheerio. This makes the scraping possible
@@ -9,6 +10,9 @@ var exphbs = require("express-handlebars");
 
 // Initialize Express
 var app = express();
+
+// Use morgan logger for logging requests
+app.use(logger("dev"));
 
 // Use the express.static middleware to serve static content for the app from the "public" directory in the application directory.
 app.use(express.static("public"));
@@ -44,16 +48,15 @@ db.on("error", function(error) {
 // Retrieve data from the db
 app.get("/", function(req, res) {
   // Find all results from the scrapedNews collection in the db
-  db.scrapedNews.find({})
-  .then(function(err, doc) {
+  // db.scrapedNews.find({})
+  // .then(function(err, doc) {
     // If any articles are found, send them to the client
     // res.json(newsdb);
-    res.render("index", {article: doc});
-  })
-  .catch(function(err) {
-    // If an error occurs, send it back to the client
-    res.json(err);
-  });
+    res.render("index");
+  // })
+  // .catch(function(err) {
+  //   // If an error occurs, send it back to the client
+  //   res.json(err);
 });
 
 // Scrape data from one site and place it into the mongodb db
@@ -81,7 +84,7 @@ app.get("/scrape", function(req, res) {
       // If this found element had a headline, summary, and url
       if (headline && summary && url) {
         // Insert the data in the scrapedNews db
-        db.scrapedNews.insert({
+        db.Article.insert({
           headline: headline,
           summary: summary,
           url: url
@@ -94,7 +97,7 @@ app.get("/scrape", function(req, res) {
           else {
             // Otherwise, log the inserted data
             console.log(inserted);
-            res.send("Return to homepage to view articles")
+            res.send("Return to /articles to view articles")
           }
         });
       }
@@ -105,13 +108,28 @@ app.get("/scrape", function(req, res) {
   // res.redirect("/");
 });
 
+// Route for getting all Questions from the db
+app.get("/Articles", function (req, res) {
+  // Grab every document in the Questions collection
+  db.Article.find({})
+    .then(function (articledb) {
+      // If we were able to successfully find Questions, send them back to the client
+      res.json(articledb);
+    })
+    .catch(function (err) {
+      // If an error occurred, send it to the client
+      res.json(err);
+    });
+});
+
 // Show the user the individual quote and the form to update the quote.
-app.get("/:id", function(req, res) {
+app.get("/Articles/:id", function(req, res) {
   var articleId = req.params.id;
-  db.scrapedNews.find({_id: articleId})
-  .then(function(newsdb) {
+  db.Article.find({_id: articleId})
+  .populate("comment")
+  .then(function(articledb) {
     // If any Books are found, send them to the client
-    res.json(newsdb);
+    res.json(articledb);
   })
   .catch(function(err) {
     // If an error occurs, send it back to the client
@@ -119,18 +137,18 @@ app.get("/:id", function(req, res) {
   });
 });
 
-app.post("/:id", function(req,res) {
+app.post("/Articles/:id", function(req,res) {
   db.Comment.create(req.body)
   .then(function(commentdb) {
-    return db.scrapedNews.findOneAndUpdate({
+    return db.Article.findOneAndUpdate({
       _id: req.params.id
     }, {
       comment: commentdb._id
     }, {
       new: true
     });
-  }).then(function (newsdb) {
-    res.json(newsdb);
+  }).then(function (articledb) {
+    res.json(articledb);
   }).catch(function (err) {
     res.json(err);
   });
