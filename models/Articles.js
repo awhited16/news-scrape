@@ -5,18 +5,18 @@ var Schema = mongoose.Schema;
 
 // Using the Schema constructor, create a new LibrarySchema object
 // This is similar to a Sequelize model
-var ArticleSchema = new Schema({
-  Headline: {
+var ArticlesSchema = new Schema({
+  headline: {
     type: String,
-    required: true
+    required: false
   },
-  Summary: {
+  summary: {
     type: String,
-    required: true
+    required: false
   },
-  URL: {
+  url: {
     type: String,
-    required: true
+    required: false
   },
   Comments: [{
       type: Schema.Types.ObjectId,
@@ -25,7 +25,7 @@ var ArticleSchema = new Schema({
 });
 
 // This creates our model from the above schema, using mongoose's model method
-var Article = mongoose.model("Article", ArticleSchema);
+var Articles = mongoose.model("Articles", ArticlesSchema);
 
 // Export the Book model
-module.exports = Article;
+module.exports = Articles;

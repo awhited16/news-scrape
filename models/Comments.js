@@ -5,13 +5,13 @@ var Schema = mongoose.Schema;
 
 // Using the Schema constructor, create a new LibrarySchema object
 // This is similar to a Sequelize model
-var CommentSchema = new Schema({
+var CommentsSchema = new Schema({
   // `text` must be of type String
   Text: String
 });
 
 // This creates our model from the above schema, using mongoose's model method
-var Comment = mongoose.model("Comment", CommentSchema);
+var Comments = mongoose.model("Comments", CommentsSchema);
 
 // Export the Book model
-module.exports = Comment;
+module.exports = Comments;

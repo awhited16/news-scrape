@@ -29,20 +29,15 @@ var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/newsdb";
 
 mongoose.connect(MONGODB_URI);
 
-
 // Database configuration
 var databaseUrl = "newsdb";
-var collections = ["scrapedNews"];
+var collections = ["scrapedNews", "comments"];
 
 // Hook mongojs configuration to the db variable
-var db = mongojs(databaseUrl, collections);
-db.on("error", function(error) {
-  console.log("Database Error:", error);
-});
-
-// Main route (simple Hello World Message)
-// app.get("/", function(req, res) {
-//   res.send("Hello world");
+// var db = mongojs(databaseUrl, collections);
+var db = require("./models");
+// db.on("error", function(error) {
+//   console.log("Database Error:", error);
 // });
 
 // Retrieve data from the db
@@ -59,45 +54,42 @@ app.get("/", function(req, res) {
   //   res.json(err);
 });
 
-// Scrape data from one site and place it into the mongodb db
+
 app.get("/scrape", function(req, res) {
   // Make a request via axios for the news section of `ycombinator`
-  axios.get("https://www.dailymail.co.uk/news/index.html").then(function(response) {
+  axios.get("https://www.dailymail.co.uk/ushome/index.html").then(function(response) {
     // Load the html body from axios into cheerio
     var $ = cheerio.load(response.data);
     // For each element with a "article" class
-    $("div.articletext").each(function(i, element) {
-      // Save the headline, summary, and url of each link enclosed in the current element
-      // The Onion
-      // var headline = $(element).text();
-      // var summary = $(element).children("p").text();
-      // var url = $(element).parent("a").attr("href");
-
-      // Daily Mail - all but headline
-      var headline = $(element).children("a").children("img").attr("alt");
-      var summary = $(element).children("p").text();
-      var url = $(element).children("a").attr("href");
-      console.log(headline);
-      console.log(summary);
-      console.log(url);
-
+    $("div.article").each(function(i, element) {
+      var headline = $(element)
+        .children("h2").text().trim();
+      var summary = $(element)
+        .children("div.articletext")
+        .children("p").text().trim();
+      var url = $(element)
+        .children("h2")
+        .children("a").attr("href");
+      
+        console.log(headline);
+        console.log(summary);
+        console.log(url);
       // If this found element had a headline, summary, and url
       if (headline && summary && url) {
         // Insert the data in the scrapedNews db
-        db.Article.insert({
+        db.Articles.create({
           headline: headline,
           summary: summary,
           url: url
         },
-        function(err, inserted) {
+        function(err, created) {
           if (err) {
             // Log the error if one is encountered during the query
             console.log(err);
           }
           else {
             // Otherwise, log the inserted data
-            console.log(inserted);
-            res.send("Return to /articles to view articles")
+            console.log(created);
           }
         });
       }
@@ -106,49 +98,47 @@ app.get("/scrape", function(req, res) {
 
   // Send a "Scrape Complete" message to the browser
   // res.redirect("/");
+  
+  res.send("Return to /articles to view articles")
 });
 
+
 // Route for getting all Questions from the db
-app.get("/Articles", function (req, res) {
+app.get("/articles", function (req, res) {
   // Grab every document in the Questions collection
-  db.Article.find({})
-    .then(function (articledb) {
-      // If we were able to successfully find Questions, send them back to the client
-      res.json(articledb);
-    })
-    .catch(function (err) {
-      // If an error occurred, send it to the client
-      res.json(err);
-    });
+  db.Articles.find({})
+  .then(function(articlesdb) {
+    res.json(articlesdb);
+  })
+  .catch(function(err) {
+    res.json(err);
+  });
 });
 
 // Show the user the individual quote and the form to update the quote.
 app.get("/Articles/:id", function(req, res) {
   var articleId = req.params.id;
-  db.Article.find({_id: articleId})
-  .populate("comment")
-  .then(function(articledb) {
-    // If any Books are found, send them to the client
-    res.json(articledb);
-  })
-  .catch(function(err) {
-    // If an error occurs, send it back to the client
-    res.json(err);
-  });
+  db.Articles.find({_id: articleId}), function(error, found) {
+    if (err) {
+      console.log(err)
+    } else {
+      res.json(found);
+    }
+  }
 });
 
 app.post("/Articles/:id", function(req,res) {
-  db.Comment.create(req.body)
-  .then(function(commentdb) {
-    return db.Article.findOneAndUpdate({
+  db.Articles.create(req.body)
+  .then(function(commentsdb) {
+    return db.Articles.findOneAndUpdate({
       _id: req.params.id
     }, {
       comment: commentdb._id
     }, {
       new: true
     });
-  }).then(function (articledb) {
-    res.json(articledb);
+  }).then(function (articlesdb) {
+    res.json(articlesdb);
   }).catch(function (err) {
     res.json(err);
   });
