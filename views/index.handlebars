@@ -4,21 +4,22 @@
 
 <ul>
   {{#each articles}}
-  	<li>
-      <p><span class="label">Headline:</span> {{this.headline}}</p>
-      <p><span class="label">Summary:</span> {{this.summary}}</p>
-      <p><span class="label">URL:</span> {{this.url}}</p>
+    <div class="articleSection">
+      <li><span class="label"><strong>Headline: </strong></span> {{this.headline}}</li>
+      <li><span class="label"><strong>Summary: </strong></span> {{this.summary}}</li>
+      <li><span class="label"><strong>URL: </strong></span> {{this.url}}</li>
 
       <br>
       <h2>Comments:</h2>
-      <p>{{this.Comments}}</p>
+      <p class="comments">{{this.Comments}}</p>
 
       <div class="form-group">
-        <label for="comments">Comment:</label>
+        <label for="comments">Add a new comment:</label><br>
         <textarea id="comments" name="comments" rows="4" cols="40">{{this.comments}}</textarea>
       </div>
       
       <button data-id="{{this.id}}" id="submit">Submit</button>
-  	</li>
+      <br>
+    </div>
   {{/each}}
 </ul>
