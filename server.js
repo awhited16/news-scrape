@@ -8,6 +8,8 @@ var axios = require("axios");
 var cheerio = require("cheerio");
 var exphbs = require("express-handlebars");
 
+var PORT = process.env.PORT || 3000;
+
 // Initialize Express
 var app = express();
 
@@ -43,15 +45,14 @@ var db = require("./models");
 // Retrieve data from the db
 app.get("/", function(req, res) {
   // Find all results from the scrapedNews collection in the db
-  // db.scrapedNews.find({})
-  // .then(function(err, doc) {
+  db.Articles.find({})
+  .then(function(data) {
     // If any articles are found, send them to the client
-    // res.json(newsdb);
-    res.render("index");
-  // })
-  // .catch(function(err) {
-  //   // If an error occurs, send it back to the client
-  //   res.json(err);
+    res.render("index", {articles: data});
+  })
+  .catch(function(err) {
+    res.json(err);
+  });
 });
 
 
@@ -115,14 +116,17 @@ app.get("/articles", function (req, res) {
   });
 });
 
-// Show the user the individual quote and the form to update the quote.
+// generic form for creating comment under each article, associated iwth article ID
+// when submitted display under article
+
+// Show the user the individual comment and the form to update the comment.
 app.get("/Articles/:id", function(req, res) {
   var articleId = req.params.id;
-  db.Articles.find({_id: articleId}), function(error, found) {
+  db.Articles.find({_id: articleId}), function(err, found) {
     if (err) {
       console.log(err)
     } else {
-      res.json(found);
+      res.render("comment", found);
     }
   }
 });
@@ -133,7 +137,7 @@ app.post("/Articles/:id", function(req,res) {
     return db.Articles.findOneAndUpdate({
       _id: req.params.id
     }, {
-      comment: commentdb._id
+      comment: commentsdb._id
     }, {
       new: true
     });
@@ -146,7 +150,7 @@ app.post("/Articles/:id", function(req,res) {
 
 
 // Listen on port 3000
-app.listen(3000, function() {
-  console.log("App running on port 3000!");
+app.listen(PORT, function() {
+  console.log("Listening on port: " + PORT);
 });
 

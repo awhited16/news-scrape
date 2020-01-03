@@ -1,15 +1,11 @@
-<h1>Update the comment with an id of {{this.id}}</h1>
+<h1>Update the following article with an id of</h1>
+<p>{{this.headline}}</p>
 
-<form data-id="{{this.id}}" class="update-form">
-
-  <div class="form-group">
-    <label for="auth">Author:</label>
-    <input type="text" id="auth" name="author" value="{{this.author}}">
-  </div>
+<form data-id="{{this._id}}" class="update-form">
 
   <div class="form-group">
-    <label for="quo">Quote:</label>
-    <textarea id="quo" name="quote" rows="8" cols="40">{{this.quote}}</textarea>
+    <label for="comments">Comment:</label>
+    <textarea id="comments" name="comments" rows="4" cols="40">{{this.comments}}</textarea>
   </div>
 
   <button type="submit">Update Comment</button>

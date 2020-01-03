@@ -3,15 +3,22 @@
 <p>View and comment on the latest news.</p>
 
 <ul>
-  {{#each article}}
+  {{#each articles}}
   	<li>
-  	    <p><span class="label">Headline:</span> {{this.headline}}</p>
-        <p><span class="label">Summary:</span> {{this.summary}}</p>
-        <p><span class="label">URL:</span> {{this.url}}</p>
+      <p><span class="label">Headline:</span> {{this.headline}}</p>
+      <p><span class="label">Summary:</span> {{this.summary}}</p>
+      <p><span class="label">URL:</span> {{this.url}}</p>
 
-        {{!-- <button data-id="{{this.id}}" class="delquote">Delete</button> --}}
+      <br>
+      <h2>Comments:</h2>
+      <p>{{this.Comments}}</p>
 
-        {{!-- {{!-- <a href="/{{this.id}}">Update this quote</a> --}} --}}
+      <div class="form-group">
+        <label for="comments">Comment:</label>
+        <textarea id="comments" name="comments" rows="4" cols="40">{{this.comments}}</textarea>
+      </div>
+      
+      <button data-id="{{this.id}}" id="submit">Submit</button>
   	</li>
   {{/each}}
 </ul>

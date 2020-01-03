@@ -1,3 +1,11 @@
+//On button click, take user to /articles/:id page
+$(".submit").on("click", function () {
+    var thisId = $(this).attr("data-id");
+    // post request to database
+    res.redirect("/articles/" + thisId);
+});
+
+
 // Grab the articles as a json
 $.getJSON("/articles", function (data) {
     // For each one
@@ -5,7 +13,8 @@ $.getJSON("/articles", function (data) {
         // Display the apropos information on the page
         $("#articles").append("<li data-id='" + data[i]._id + "'><strong>Headline: </strong>" + data[i].headline + 
         "</li><li><strong>Summary: </strong>" + data[i].summary + 
-        "</li><li><strong>URL: </strong><a href='https://www.dailymail.co.uk" + data[i].url + "'>https://www.dailymail.co.uk" + data[i].url + "</li>" + "<br />" + "<br />");
+        "</li><li><strong>URL: </strong><a href='https://www.dailymail.co.uk" + data[i].url + "'>https://www.dailymail.co.uk" + data[i].url + 
+        "</li><li><a href='/../../../views/comment'>Comment" + "</li><br />" + "<br />");
     }
 });
 
